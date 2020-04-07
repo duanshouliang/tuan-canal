@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CanalClient {
+public class StandAloneCanalClient {
     public static void main(String args[]) {
         // 创建链接
         CanalConnector connector = CanalConnectors.newSingleConnector(new InetSocketAddress("127.0.0.1",
@@ -19,10 +19,10 @@ public class CanalClient {
         int emptyCount = 0;
         try {
             connector.connect();
-            connector.subscribe(".\\*\\\\\\\\..\\*");
+            connector.subscribe();
             connector.rollback();
             int totalEmptyCount = 120;
-            while (emptyCount < totalEmptyCount) {
+            while (true) {
                 Message message = connector.getWithoutAck(batchSize); // 获取指定数量的数据
                 long batchId = message.getId();
                 int size = message.getEntries().size();
@@ -43,7 +43,7 @@ public class CanalClient {
                 // connector.rollback(batchId); // 处理失败, 回滚数据
             }
 
-            System.out.println("empty too many times, exit");
+//            System.out.println("empty too many times, exit");
         } finally {
             connector.disconnect();
         }
@@ -73,17 +73,19 @@ public class CanalClient {
             String table = entry.getHeader().getTableName();
             String type = eventType.getValueDescriptor().getName();
 
-            System.out.println("database: " + database +", table: " + table + ", type: " + type);
+            if(type.equals("INSERT")) {
+                System.out.println("database: " + database + ", table: " + table + ", type: " + type);
+            }
             for (CanalEntry.RowData rowData : rowChage.getRowDatasList()) {
                 if (eventType == CanalEntry.EventType.DELETE) {
-                    //printColumn(rowData.getBeforeColumnsList());
+                    printColumn(rowData.getBeforeColumnsList());
                 } else if (eventType == CanalEntry.EventType.INSERT) {
                     printColumn(rowData.getAfterColumnsList());
                 } else {
-                    //System.out.println("-------&gt; before");
-                    //printColumn(rowData.getBeforeColumnsList());
-                    //System.out.println("-------&gt; after");
-                    //printColumn(rowData.getAfterColumnsList());
+                    System.out.println("-------&gt; before");
+                    printColumn(rowData.getBeforeColumnsList());
+                    System.out.println("-------&gt; after");
+                    printColumn(rowData.getAfterColumnsList());
                 }
             }
         }
