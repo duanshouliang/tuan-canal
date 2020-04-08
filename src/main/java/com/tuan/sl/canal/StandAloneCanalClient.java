@@ -2,7 +2,7 @@ package com.tuan.sl.canal;
 
 import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.client.CanalConnectors;
-import com.alibaba.otter.canal.protocol.CanalEntry;
+import com.alibaba.otter.canal.protocol.CanalEntry.*;
 import com.alibaba.otter.canal.protocol.Message;
 
 import java.net.InetSocketAddress;
@@ -11,6 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 public class StandAloneCanalClient {
+    private String server;
+    private String instance;
+    private Integer port;
+
     public static void main(String args[]) {
         // 创建链接
         CanalConnector connector = CanalConnectors.newSingleConnector(new InetSocketAddress("127.0.0.1",
@@ -51,20 +55,20 @@ public class StandAloneCanalClient {
 
     private static void printEntry(Message message) {
 
-        for (CanalEntry.Entry entry : message.getEntries()) {
-            if (entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONBEGIN || entry.getEntryType() == CanalEntry.EntryType.TRANSACTIONEND) {
+        for (Entry entry : message.getEntries()) {
+            if (entry.getEntryType() == EntryType.TRANSACTIONBEGIN || entry.getEntryType() == EntryType.TRANSACTIONEND) {
                 continue;
             }
 
-            CanalEntry.RowChange rowChage = null;
+            RowChange rowChage = null;
             try {
-                rowChage = CanalEntry.RowChange.parseFrom(entry.getStoreValue());
+                rowChage = RowChange.parseFrom(entry.getStoreValue());
             } catch (Exception e) {
                 throw new RuntimeException("ERROR ## parser of eromanga-event has an error , data:" + entry.toString(),
                         e);
             }
 
-            CanalEntry.EventType eventType = rowChage.getEventType();
+            EventType eventType = rowChage.getEventType();
 //            System.out.println(String.format("================&gt; binlog[%s:%s] , name[%s,%s] , eventType : %s",
 //                    entry.getHeader().getLogfileName(), entry.getHeader().getLogfileOffset(),
 //                    entry.getHeader().getSchemaName(), entry.getHeader().getTableName(),
@@ -76,24 +80,22 @@ public class StandAloneCanalClient {
             if(type.equals("INSERT")) {
                 System.out.println("database: " + database + ", table: " + table + ", type: " + type);
             }
-            for (CanalEntry.RowData rowData : rowChage.getRowDatasList()) {
-                if (eventType == CanalEntry.EventType.DELETE) {
+            for (RowData rowData : rowChage.getRowDatasList()) {
+                if (eventType == EventType.DELETE) {
                     printColumn(rowData.getBeforeColumnsList());
-                } else if (eventType == CanalEntry.EventType.INSERT) {
+                } else if (eventType == EventType.INSERT) {
                     printColumn(rowData.getAfterColumnsList());
-                } else {
-                    System.out.println("-------&gt; before");
+                } else if(eventType == EventType.UPDATE){
                     printColumn(rowData.getBeforeColumnsList());
-                    System.out.println("-------&gt; after");
                     printColumn(rowData.getAfterColumnsList());
                 }
             }
         }
     }
 
-    private static void printColumn(List<CanalEntry.Column> columns) {
+    private static void printColumn(List<Column> columns) {
         Map<String, Object> data = new HashMap<>();
-        for (CanalEntry.Column column : columns) {
+        for (Column column : columns) {
             data.put(column.getName(), column.getValue());
             //System.out.println(column.getName() + " : " + column.getValue() + "    update=" + column.getUpdated());
         }
