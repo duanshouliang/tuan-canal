@@ -4,10 +4,8 @@ package com.tuan.sl.canal.executor;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.otter.canal.client.CanalConnector;
-import com.alibaba.otter.canal.protocol.CanalEntry.RowChange;
-import com.alibaba.otter.canal.protocol.CanalEntry.RowData;
 import com.alibaba.otter.canal.protocol.Message;
-import com.tuan.sl.canal.client.CanalConnectorFactory;
+import com.tuan.sl.canal.client.CanalConnectorWrapper;
 import com.tuan.sl.canal.parser.CanalMessageParser;
 import com.tuan.sl.canal.parser.entity.RowEntity;
 import org.slf4j.Logger;
@@ -16,23 +14,22 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 
-public class CanalExecutor implements Runnable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CanalExecutor.class);
+public class DataPipelineExecutor implements Runnable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataPipelineExecutor.class);
     private static final Integer DEFAULT_BATCH_SIZE = 100;
     private static final Integer TIMEOUT = 100;
     private volatile boolean running = true;
-    private CanalConnectorFactory canalConnectorFactory;
+    private CanalConnectorWrapper canalConnectorWrapper;
 
+    public DataPipelineExecutor(){}
 
-    public CanalExecutor(){}
-
-    public CanalExecutor(CanalConnectorFactory canalConnectorFactory){
-        this.canalConnectorFactory = canalConnectorFactory;
+    public DataPipelineExecutor(CanalConnectorWrapper canalConnectorWrapper){
+        this.canalConnectorWrapper = canalConnectorWrapper;
     }
     @Override
     public void run() {
-        CanalConnector connector = canalConnectorFactory.getConnector();
-        String instance = canalConnectorFactory.getInstance();
+        CanalConnector connector = canalConnectorWrapper.getCanalConnector();
+        String instance = canalConnectorWrapper.getInstance();
         while (running){
             Message message;
             try {
@@ -44,7 +41,6 @@ public class CanalExecutor implements Runnable {
             if(null == message){
                 continue;
             }
-
             Long batchId = message.getId();
             int size = message.getEntries().size();
             if (batchId == -1 || size == 0) {
@@ -63,13 +59,10 @@ public class CanalExecutor implements Runnable {
                 for(RowEntity rowEntity : rowEntities){
                     String data = JSONObject.toJSONString(rowEntity, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteDateUseDateFormat);
                     LOGGER.info("Received data from canal" + ": " + data);
-
-
                 }
                 // ack
                 connector.ack(batchId);
             }
-
         }
     }
 }

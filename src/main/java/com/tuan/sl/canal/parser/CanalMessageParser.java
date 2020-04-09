@@ -54,6 +54,7 @@ public class CanalMessageParser {
                 rowEntity.setTableName(tableName);
                 rowEntity.setEventType(type);
                 rowEntity.setOperateTime(operateTime);
+                rowEntity.setPrimaryKeys(new ArrayList<>());
                 if(eventType == CanalEntry.EventType.DELETE){
                     Map<String, Object> row = getRowColumn(rowData.getBeforeColumnsList(), rowEntity, eventType);
                     rowEntity.setOldRow(row);

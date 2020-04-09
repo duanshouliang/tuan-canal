@@ -14,7 +14,7 @@ public class KafkaProducerWrapper {
 
     public KafkaProducerWrapper() {
         Properties kafkaConfig = new Properties();
-        kafkaConfig.put("bootstrap.servers", "10.171.31.87:9092,10.171.31.53:9092,10.171.31.203:9092");
+        kafkaConfig.put("bootstrap.servers", "106.75.218.68:9092");
         kafkaConfig.put("client.id", "data-pipeline");
         kafkaConfig.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         kafkaConfig.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
@@ -31,6 +31,6 @@ public class KafkaProducerWrapper {
 
     public static void main(String[] args) {
         KafkaProducerWrapper producerWrapper = new KafkaProducerWrapper();
-        producerWrapper.send("ecarx-data-pipeline",0,"xxxxxxxx duanshuliang ");
+        producerWrapper.send("ecarx-data-pipeline",0,"test duanshuliang ");
     }
 }

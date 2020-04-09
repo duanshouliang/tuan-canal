@@ -13,7 +13,7 @@ public class KafkaConsumerWrapper {
     private static Properties consumerConfig(String clientId, String consumerStrategy) {
         /* 定义kakfa 服务的地址，不需要将所有broker指定上 */
         Properties properties = new Properties();
-        properties.put("bootstrap.servers", "10.171.31.87:9092,10.171.31.53:9092,10.171.31.203:9092");
+        properties.put("bootstrap.servers", "106.75.218.68:9092");
         /* 是否自动确认offset */
         properties.put("enable.auto.commit", "true");
         properties.put("max.poll.records", "10");

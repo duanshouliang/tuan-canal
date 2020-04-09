@@ -11,9 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public class StandAloneCanalClient {
-    private String server;
-    private String instance;
-    private Integer port;
 
     public static void main(String args[]) {
         // 创建链接
