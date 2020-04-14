@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: tuan-kafka
+  canal:
+    instances: 127.0.0.1:11111:example:data_pipeline2
+    instance_topic: example:data_pipeline2
+  kafka:
+    servers: localhost:9092
+
+server:
+  port: 11080
+  context-path: /pipeline
+
+
+

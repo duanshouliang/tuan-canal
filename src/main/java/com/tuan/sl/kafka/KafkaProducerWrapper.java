@@ -4,21 +4,28 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.Properties;
+import javax.annotation.PostConstruct;
 
+
+@Component("kafkaProducerWrapper")
 public class KafkaProducerWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProducerWrapper.class);
 
-    private final KafkaProducer<String, String> kafkaProducer;
+    private KafkaProducer<String, String> kafkaProducer;
+
+    @Autowired
+    private KafkaContext kafkaContext;
 
     public KafkaProducerWrapper() {
-        Properties kafkaConfig = new Properties();
-        kafkaConfig.put("bootstrap.servers", "106.75.218.68:9092");
-        kafkaConfig.put("client.id", "data-pipeline");
-        kafkaConfig.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        kafkaConfig.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        this.kafkaProducer = new KafkaProducer<String, String>(kafkaConfig);
+
+    }
+
+    @PostConstruct
+    public void init(){
+        kafkaProducer = new KafkaProducer<String, String>(kafkaContext.getProperties());
     }
 
     public void send(String topic, Integer partition, String data){
@@ -29,8 +36,11 @@ public class KafkaProducerWrapper {
         });
     }
 
-    public static void main(String[] args) {
-        KafkaProducerWrapper producerWrapper = new KafkaProducerWrapper();
-        producerWrapper.send("ecarx-data-pipeline",0,"test duanshuliang ");
+    public void send(String topic, String data){
+        kafkaProducer.send(new ProducerRecord<>(topic, null, data), (recordMetadata, e) -> {
+            if (e != null) {
+                LOGGER.error("Send data to kafka " + recordMetadata + " error: ", e);
+            }
+        });
     }
 }

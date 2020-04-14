@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CanalConfigBuilder {
-    private List<CanalConfig> canalConfigs = new ArrayList<>();
+    private List<InstanceConfig> instanceConfigs = new ArrayList<>();
 
-    public List<CanalConfig> build(String server, Integer port, String instance, String username, String password){
-        CanalConfig config = new CanalConfig();
+    public List<InstanceConfig> build(String server, Integer port, String instance, String username, String password){
+        InstanceConfig config = new InstanceConfig();
         config.setServer(server);
         config.setPort(port);
         config.setInstance(instance);
         config.setUsername(username);
         config.setPassword(password);
-        canalConfigs.add(config);
-        return canalConfigs;
+        instanceConfigs.add(config);
+        return instanceConfigs;
     }
 
-    public List<CanalConfig> getConfig(){
-        return canalConfigs;
+    public List<InstanceConfig> getConfig(){
+        return instanceConfigs;
     }
 }

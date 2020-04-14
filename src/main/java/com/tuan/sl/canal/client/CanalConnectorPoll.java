@@ -12,11 +12,11 @@ import java.util.*;
 public class CanalConnectorPoll {
     private static final Logger LOGGER = LoggerFactory.getLogger(CanalConnectorPoll.class);
 
-    private List<CanalConfig> canalonfigs;
+    private List<InstanceConfig> canalonfigs;
     private List<CanalConnectorWrapper> connectors;
 
 
-    public CanalConnectorPoll(List<CanalConfig> canalonfigs) {
+    public CanalConnectorPoll(List<InstanceConfig> canalonfigs) {
         this.canalonfigs = canalonfigs;
         this.buildConnectors();
     }
@@ -34,7 +34,7 @@ public class CanalConnectorPoll {
         });
     }
 
-    private CanalConnectorWrapper build(CanalConfig connectorConfig) {
+    private CanalConnectorWrapper build(InstanceConfig connectorConfig) {
         CanalConnectorWrapper connectorWrapper = null;
         try {
             String server = connectorConfig.getServer();
@@ -50,6 +50,7 @@ public class CanalConnectorPoll {
                 connectorWrapper = new CanalConnectorWrapper();
                 connectorWrapper.setCanalConnector(connector);
                 connectorWrapper.setInstance(instance);
+                connectorWrapper.setKafkaTopic(connectorConfig.getKafkaTopic());
                 LOGGER.info("Connect to canal instance" + server + " " + port + " " + instance);
             } else {
                 LOGGER.info("Connect to canal instance" + server + " " + port + " " + instance + " failed");

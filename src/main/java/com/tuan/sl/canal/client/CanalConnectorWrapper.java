@@ -5,6 +5,7 @@ import com.alibaba.otter.canal.client.CanalConnector;
 public class CanalConnectorWrapper {
 
     private String instance;
+    private String kafkaTopic;
     private CanalConnector canalConnector;
 
 
@@ -22,5 +23,13 @@ public class CanalConnectorWrapper {
 
     public void setCanalConnector(CanalConnector canalConnector) {
         this.canalConnector = canalConnector;
+    }
+
+    public String getKafkaTopic() {
+        return kafkaTopic;
+    }
+
+    public void setKafkaTopic(String kafkaTopic) {
+        this.kafkaTopic = kafkaTopic;
     }
 }

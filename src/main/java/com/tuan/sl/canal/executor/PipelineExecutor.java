@@ -16,30 +16,31 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-public class DataPipelineExecutor implements Runnable {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataPipelineExecutor.class);
+public class PipelineExecutor implements Runnable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PipelineExecutor.class);
     private static final Integer DEFAULT_BATCH_SIZE = 100;
     private static final Integer TIMEOUT = 100;
     private volatile boolean running = true;
-    private CanalConnectorWrapper canalConnectorWrapper;
+    private CanalConnector canalConnector;
+    private String topic;
+    private String instance;
     private KafkaProducerWrapper kafkaProducerWrapper;
     private CountDownLatch countDownLatch;
 
-    public DataPipelineExecutor(){}
+    public PipelineExecutor(){}
 
-    public DataPipelineExecutor(CanalConnectorWrapper canalConnectorWrapper, KafkaProducerWrapper kafkaProducerWrapper ){
-        this.canalConnectorWrapper = canalConnectorWrapper;
+    public PipelineExecutor(CanalConnector canalConnector, String instance, String topic, KafkaProducerWrapper kafkaProducerWrapper ){
+        this.canalConnector = canalConnector;
         this.kafkaProducerWrapper = kafkaProducerWrapper;
+        this.instance = instance;
+        this.topic = topic;
     }
     @Override
     public void run() {
-        CanalConnector connector = canalConnectorWrapper.getCanalConnector();
-        String instance = canalConnectorWrapper.getInstance();
-        String topic = canalConnectorWrapper.getKafkaTopic();
         while (running){
             Message message;
             try {
-                message = connector.getWithoutAck(DEFAULT_BATCH_SIZE);
+                message = canalConnector.getWithoutAck(DEFAULT_BATCH_SIZE);
             }catch (Exception e){
                 LOGGER.error("Get data by canal of instance {} with exception {}, stack {}", instance, e.getMessage(), Arrays.toString(e.getStackTrace()));
                 continue;
@@ -51,7 +52,7 @@ public class DataPipelineExecutor implements Runnable {
             int size = message.getEntries().size();
             if (batchId == -1 || size == 0) {
                 // ack
-                connector.ack(batchId);
+                canalConnector.ack(batchId);
                 LOGGER.info(String.format("%s not update", instance));
                 try {
                     Thread.sleep(TIMEOUT);
@@ -67,11 +68,11 @@ public class DataPipelineExecutor implements Runnable {
                     LOGGER.info("Received data from canal" + ": " + data);
                     kafkaProducerWrapper.send(topic, data);
                 }
-                connector.ack(batchId);
+                canalConnector.ack(batchId);
             }
         }
-        if(null != connector){
-            connector.disconnect();
+        if(null != canalConnector){
+            canalConnector.disconnect();
         }
         countDownLatch.countDown();
         LOGGER.info("Instance " + instance + "disconnect from canal");
