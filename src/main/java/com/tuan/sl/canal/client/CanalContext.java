@@ -49,4 +49,8 @@ public class CanalContext {
     public List<InstanceConfig> getInstanceConfigs() {
         return instanceConfigs;
     }
+
+    public Map<String, String> getInstanceTopics() {
+        return instanceTopics;
+    }
 }

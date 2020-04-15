@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Component("dataPipelineExecute")
+//@Component("dataPipelineExecute")
 public class DataPipelineExecute {
     @Autowired
     private CanalContext canalContext;
@@ -22,7 +22,7 @@ public class DataPipelineExecute {
     public DataPipelineExecute(){
     }
 
-    @PostConstruct
+//    @PostConstruct
     public void execute(){
         CanalConnectorPoll poll = new CanalConnectorPoll(canalContext.getInstanceConfigs());
         List<CanalConnectorWrapper> connectors  = poll.getConnectors();
