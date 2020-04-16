@@ -20,7 +20,7 @@ public class PipelineExecute {
 
     @PostConstruct
     public void execute(){
-        MysqlInstanceMonitor instanceMonitor = new MysqlInstanceMonitor(kafkaProducer, canalContext);
+        MysqlInstanceMonitor instanceMonitor = new  MysqlInstanceMonitor(kafkaProducer, canalContext);
         instanceMonitor.init();
     }
 }

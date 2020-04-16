@@ -9,6 +9,8 @@ public class CanalContext {
     private static CanalContext canalContext = null;
     private List<InstanceConfig> instanceConfigs = new ArrayList<>();
     private Map<String, String> instanceTopics = new HashMap<>();
+    private String zkServer;
+    private String instancePath;
 
     private CanalContext(){}
 
@@ -52,5 +54,21 @@ public class CanalContext {
 
     public Map<String, String> getInstanceTopics() {
         return instanceTopics;
+    }
+
+    public String getZkServer() {
+        return zkServer;
+    }
+
+    public void setZkServer(String zkServer) {
+        this.zkServer = zkServer;
+    }
+
+    public String getInstancePath() {
+        return instancePath;
+    }
+
+    public void setInstancePath(String instancePath) {
+        this.instancePath = instancePath;
     }
 }

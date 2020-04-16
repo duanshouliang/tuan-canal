@@ -19,7 +19,11 @@ public class CanalInstanceConfigs {
     @Value("${spring.canal.instance_topic}")
     private String instanceTopics;
 
+    @Value("${spring.zookeeper.servers}")
+    private String zkServer;
 
+    @Value("${spring.canal.path}")
+    private String instancePath;
 
     @Bean
     public CanalContext buildCanalContext() {
@@ -32,6 +36,14 @@ public class CanalInstanceConfigs {
         if(StringUtils.isNotBlank(instanceTopics)){
             List<String> instanceTopicList = Arrays.asList(instanceTopics.split(";"));
             canalContext.buildInstanceTopicContext(instanceTopicList);
+        }
+
+        if(StringUtils.isNotBlank(zkServer)){
+            canalContext.setZkServer(zkServer);
+        }
+
+        if(StringUtils.isNotBlank(instancePath)){
+            canalContext.setInstancePath(instancePath);
         }
         return canalContext;
     }

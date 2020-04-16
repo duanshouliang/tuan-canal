@@ -5,6 +5,7 @@ import com.alibaba.otter.canal.client.CanalConnectors;
 import com.tuan.sl.canal.executor.PipelineExecutor;
 import com.tuan.sl.kafka.KafkaProducerWrapper;
 import io.netty.util.concurrent.DefaultThreadFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -33,15 +35,19 @@ public class MysqlInstanceMonitor implements Watcher {
     private ZooKeeper zooKeeper;
     //数据同步执行器池
     private List<PipelineExecutor> pipelineExecutors;
-    private CanalContext canalContext;
+    private Map<String, String> instanceTopics;
     private KafkaProducerWrapper kafkaProducer;
     //数据同步线程执行器
     private ExecutorService executors;
     private Thread startThread;
+    private String zkServer;
+    private String instancePath;
 
     public MysqlInstanceMonitor(KafkaProducerWrapper kafkaProducer, CanalContext canalContext){
         this.kafkaProducer = kafkaProducer;
-        this.canalContext = canalContext;
+        this.instanceTopics = canalContext.getInstanceTopics();
+        this.zkServer = canalContext.getZkServer();
+        this.instancePath = canalContext.getInstancePath();
         countDownLatch = new CountDownLatch(1);
         pipelineExecutors = new ArrayList<>();
         //创建线程池
@@ -54,7 +60,10 @@ public class MysqlInstanceMonitor implements Watcher {
         //创建线程执行器
         executors = Executors.newCachedThreadPool(threadFactory);
         try {
-            zooKeeper = new ZooKeeper(DEFAULT_ZOOKEEPER_SERVER,3000, this);
+            if(StringUtils.isBlank(zkServer)){
+                zkServer = DEFAULT_ZOOKEEPER_SERVER;
+            }
+            zooKeeper = new ZooKeeper(zkServer,3000, this);
             //最初与zk服务器建立好连接或者连接成功时，则执行后事件
             countDownLatch.await();
         } catch (IOException e) {
@@ -118,7 +127,7 @@ public class MysqlInstanceMonitor implements Watcher {
                 try{
                     connector.subscribe();
                     connector.rollback();
-                    PipelineExecutor executor = new PipelineExecutor(connector, instance, canalContext.getInstanceTopics().get(instance),kafkaProducer);
+                    PipelineExecutor executor = new PipelineExecutor(connector, instance, instanceTopics.get(instance),kafkaProducer);
                     executors.submit(executor);
                 }catch (Exception e){
                     LOGGER.error("Connect to canal failed!");

@@ -4,8 +4,12 @@ spring:
   canal:
     instances: 127.0.0.1:11111:example:data_pipeline2
     instance_topic: example:data_pipeline2
+    path: '/otter/canal/destinations'
   kafka:
     servers: localhost:9092
+
+  zookeeper:
+    servers: 127.0.0.1:2181
 
 server:
   port: 11080
