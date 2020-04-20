@@ -1,7 +1,6 @@
 package com.tuan.sl.canal.parser;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.otter.canal.protocol.CanalEntry;
 import com.alibaba.otter.canal.protocol.CanalEntry.Entry;
 import com.alibaba.otter.canal.protocol.Message;
@@ -60,11 +59,11 @@ public class CanalMessageParser {
                     rowEntity.setOldRow(row);
                 }else if(eventType == CanalEntry.EventType.INSERT){
                     Map<String, Object> row = getRowColumn(rowData.getAfterColumnsList(), rowEntity, eventType);
-                    rowEntity.setOldRow(row);
+                    rowEntity.setNewRow(row);
                 }else{
                     Map<String, Object> newData = getRowColumn(rowData.getAfterColumnsList(), rowEntity, eventType);
                     rowEntity.setNewRow(newData);
-                    Map<String, Object> oldData = getRowColumn(rowData.getBeforeColumnsList(), rowEntity, eventType);
+                    Map<String, Object> oldData = getRowColumn(rowData.getBeforeColumnsList(), rowEntity, null);
                     rowEntity.setOldRow(oldData);
                 }
                 rowEntities.add(rowEntity);
@@ -78,15 +77,21 @@ public class CanalMessageParser {
     public static Map<String, Object> getRowColumn(List<CanalEntry.Column> columnList, RowEntity rowEntity, CanalEntry.EventType eventType){
         Map<String, Object> columns = new HashMap<>();
         for(CanalEntry.Column column : columnList){
-            columns.put(column.getName(), column.getValue());
-            if (column.getIsKey()) {
-                rowEntity.getPrimaryKeys().add(column.getName());
+            if(eventType == CanalEntry.EventType.UPDATE ){
+                if(column.getUpdated()) {
+                    columns.put(column.getName(), parseValueByMysqlType(column.getValue(), column.getMysqlType()));
+                }
+            }else {
+                columns.put(column.getName(), parseValueByMysqlType(column.getValue(), column.getMysqlType()));
+                if (column.getIsKey()) {
+                    rowEntity.getPrimaryKeys().add(column.getName());
+                }
             }
         }
         return columns;
     }
 
-    private Object parseValueByMysqlType(String value, String mysqlType) {
+    private static Object parseValueByMysqlType(String value, String mysqlType) {
         if (StringUtils.isBlank(value)) {
             return null;
         }
@@ -118,14 +123,5 @@ public class CanalMessageParser {
         LocalDateTime localDateTime = LocalDateTime.parse(date, dtf2);
         Instant istant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
         return Date.from(istant);
-    }
-
-
-    public static void main(String[] args) {
-        String time1 = "2019-06-26 19:00:00";
-        DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime localDateTime = LocalDateTime.parse(time1, dtf2);
-        Instant istant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
-        Date date = Date.from(istant);
     }
 }

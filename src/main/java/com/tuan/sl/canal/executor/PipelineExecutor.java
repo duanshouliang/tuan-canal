@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.otter.canal.client.CanalConnector;
 import com.alibaba.otter.canal.protocol.Message;
-import com.tuan.sl.canal.client.CanalConnectorWrapper;
 import com.tuan.sl.canal.parser.CanalMessageParser;
 import com.tuan.sl.canal.parser.entity.RowEntity;
 import com.tuan.sl.kafka.KafkaProducerWrapper;
@@ -66,7 +65,7 @@ public class PipelineExecutor implements Runnable {
                 for(RowEntity rowEntity : rowEntities){
                     String data = JSONObject.toJSONString(rowEntity, SerializerFeature.WriteMapNullValue, SerializerFeature.WriteDateUseDateFormat);
                     LOGGER.info("Received data from canal" + ": " + data);
-                    kafkaProducerWrapper.send(topic, data);
+                   kafkaProducerWrapper.send(topic, data);
                 }
                 canalConnector.ack(batchId);
             }
